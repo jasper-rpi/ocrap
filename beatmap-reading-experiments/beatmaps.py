@@ -5,4 +5,4 @@ import zipfile
 for file in [f for f in os.listdir() if os.path.isfile(os.path.join(".", f))]:
     if file.endswith(".osz"):
         beatmap = zipfile.ZipFile(file)
-        beatmap.extractall()
+        beatmap.extractall(path=f"beatmaps/{file.strip(".osz")}")
