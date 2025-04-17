@@ -1,0 +1,3 @@
+[submodule "python-osu-parser"]
+	path = python-osu-parser
+	url = https://github.com/Awlexus/python-osu-parser.git
