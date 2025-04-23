@@ -5,8 +5,9 @@ import os
 pygame.init()
 
 pygame.mouse.set_visible(False)
-cursor = pygame.image.load(os.path.join('assets', 'cursor.png'))
-cursor_rect = cursor.get_rect()
+pygame.display.set_caption('ocrap!')
+
+button_pos = 600, 600
 
 clock = pygame.time.Clock()
 
@@ -16,23 +17,32 @@ if resolution_choice not in resolutions.keys():
     exit()
 resolution = resolutions[resolution_choice]
 
-#tickrates = (30, 60, 120, 144, 240)
-#tick_choice = int(input("Choose your tickrate:\n1. 30\n2. 60\n3. 120\n4. 144\n5. 240\n"))
-#if tick_choice not in tickrates:
-#    exit()
-#ticks = int(tickrates[tick_choice])
+tickrates = {1: 30, 2: 60, 3: 120, 4: 144, 5: 240}
+tick_choice = int(input("Choose your tickrate:\n1. 30\n2. 60\n3. 120\n4. 144\n5. 240\n"))
+if tick_choice not in tickrates.keys():
+    exit()
+ticks = int(tickrates[tick_choice])
 
-screen = pygame.display.set_mode((resolution[0], resolution[1]))
+screen = pygame.display.set_mode(resolution)
 
 running = True
 while running:
     screen.fill((0, 0, 0))
-    cursor_rect.center = pygame.mouse.get_pos()
-    screen.blit(cursor, cursor_rect.center)
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    button = pygame.draw.circle(screen, (255, 255, 255), button_pos, 60)
+    cursor = pygame.draw.circle(screen, (255, 255, 51), (mouse_x, mouse_y), 10)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-    pygame.display.update()
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            distance = ((mouse_x - button_pos[0]) ** 2 + (mouse_y - button_pos[1]) ** 2) ** 0.5
 
-    clock.tick(60)
+            if distance <= 60 + 10:
+                print('clicked\n')
+
+    clock.tick(ticks)
     pygame.display.flip()
