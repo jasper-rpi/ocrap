@@ -1,5 +1,6 @@
 import pygame
 from assets import *
+import os
 
 pygame.init()
 
@@ -19,7 +20,7 @@ resolution = resolutions[resolution_choice]
 #tick_choice = int(input("Choose your tickrate:\n1. 30\n2. 60\n3. 120\n4. 144\n5. 240\n"))
 #if tick_choice not in tickrates:
 #    exit()
-#ticks = int(tickrates[tick_choice - 1])        WIP kood
+#ticks = int(tickrates[tick_choice])
 
 screen = pygame.display.set_mode((resolution[0], resolution[1]))
 
