@@ -30,8 +30,26 @@ ticks = int(tickrates[tick_choice])
 
 screen = pygame.display.set_mode(resolution)
 
+# https://osu.ppy.sh/wiki/en/Client/Playfield
+playfield_x = 512
+playfield_y = 384
+res_multiplier = 1
+# Scale playfield with resolution
+while playfield_x <= resolution[0] and playfield_y <= resolution[1]:
+    playfield_x += 512
+    playfield_y += 384
+    res_multiplier += 1
+
+playfield_x -= 512
+playfield_y -= 384
+res_multiplier -= 1
+# ONLY DRAW HIT OBJECTS HERE
+playfield = pygame.Surface((playfield_x, playfield_y))
+playfield_dest_x = (resolution[0] - playfield_x) // 2
+playfield_dest_y = (resolution[1] - playfield_y) // 2
+
 running = True
-pygame.mixer.music.play(1)
+#pygame.mixer.music.play(1)
 timer = 0
 objects_to_cull = 0
 # Stores circles that need to be drawn with position
@@ -39,14 +57,13 @@ loaded_objects = []
 while running:
     timer += 1000 / ticks
     # Get hit objects from beatmap, check if timing is correct
-    print(beatmap["hitObjects"])
     for i in beatmap["hitObjects"]:
         if i["startTime"] <= timer:
             objects_to_cull += 1
             # Ignoring everything except circles for now
             if i["object_name"] == "circle":
-                loaded_objects.append(tuple(i["position"]))
-                print(loaded_objects)
+                loaded_objects.append((i["position"][0] * res_multiplier, i["position"][1] * res_multiplier))
+                print(loaded_objects[-1])
         else:
             break
     del beatmap["hitObjects"][0:objects_to_cull]
@@ -54,10 +71,14 @@ while running:
 
     screen.fill((0, 0, 0))
     mouse_x, mouse_y = pygame.mouse.get_pos()
-    cursor = pygame.draw.circle(screen, (255, 255, 51), (mouse_x, mouse_y), 3)
+    cursor = pygame.draw.circle(screen, (255, 255, 51), (mouse_x, mouse_y), 3 * res_multiplier)
+    mouse_x_playfield = mouse_x - playfield_dest_x
+    mouse_y_playfield = mouse_y - playfield_dest_y
 
     for i in loaded_objects:
-        pygame.draw.circle(screen, (255, 255, 255), i, 20)
+        pygame.draw.circle(playfield, (255, 255, 255), i, 20 * res_multiplier)
+
+    screen.blit(playfield, (playfield_dest_x, playfield_dest_y), special_flags=1)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -65,8 +86,9 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
+            print(f"Mouse: {mouse_x_playfield}, {mouse_y_playfield}")
             for i in loaded_objects:
-                distance = ((mouse_x - i[0]) ** 2 + (mouse_y - i[1]) ** 2) ** 0.5
+                distance = ((mouse_x_playfield - i[0]) ** 2 + (mouse_y_playfield - i[1]) ** 2) ** 0.5
                 if distance <= 60 + 10:
                     print('clicked\n')
                     loaded_objects.remove(i)
