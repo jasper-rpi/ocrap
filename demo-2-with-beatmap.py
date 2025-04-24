@@ -49,7 +49,7 @@ playfield_dest_x = (resolution[0] - playfield_x) // 2
 playfield_dest_y = (resolution[1] - playfield_y) // 2
 
 running = True
-#pygame.mixer.music.play(1)
+pygame.mixer.music.play(1)
 timer = 0
 objects_to_cull = 0
 # Stores circles that need to be drawn with position
