@@ -1,0 +1,111 @@
+import pygame
+import os
+
+import beatmaps
+from assets import *
+from HitObjects import HitCircle
+
+pygame.init()
+pygame.mixer.music.load("song.mp3")
+
+pygame.mouse.set_visible(False)
+pygame.display.set_caption('ocrap!')
+
+button_pos = 600, 600
+
+clock = pygame.time.Clock()
+
+resolutions = {1:(1280, 720), 2:(1920, 1080), 3:(2560, 1440)}
+resolution_choice = int(input("Choose your resolution:\n1. 1280 x 720\n2. 1920 x 1080\n3. 2560 x 1440\n"))
+if resolution_choice not in resolutions.keys():
+    exit()
+resolution = resolutions[resolution_choice]
+
+tickrates = {1: 30, 2: 60, 3: 120, 4: 144, 5: 240}
+tick_choice = int(input("Choose your tickrate:\n1. 30\n2. 60\n3. 120\n4. 144\n5. 240\n"))
+if tick_choice not in tickrates.keys():
+    exit()
+ticks = int(tickrates[tick_choice])
+
+screen = pygame.display.set_mode(resolution)
+
+# https://osu.ppy.sh/wiki/en/Client/Playfield
+playfield_x = 512
+playfield_y = 384
+res_multiplier = 1
+# Scale playfield with resolution
+while playfield_x <= resolution[0] and playfield_y <= resolution[1]:
+    playfield_x += 512
+    playfield_y += 384
+    res_multiplier += 1
+
+playfield_x -= 512
+playfield_y -= 384
+res_multiplier -= 1
+
+playfield_x_offset = (resolution[0] - playfield_x) // 2
+playfield_y_offset = (resolution[1] - playfield_y) // 2
+
+beatmap = beatmaps.parse_beatmap("beatmap.osu")
+approach_rate = float(beatmap["ApproachRate"])
+# time to start fading in at: https://osu.ppy.sh/wiki/en/Beatmap/Approach_rate
+if approach_rate < 5:
+    preempt = 1200 + 600 * (5 - approach_rate) / 5
+elif approach_rate == 5:
+    preempt = 1200
+else:
+    preempt = 1200 - 750 * (approach_rate - 5) / 5
+
+# Convert hit objects into OOP representations
+hit_objects = []
+for i in beatmap["hitObjects"]:
+    x = i["position"][0] + playfield_x_offset
+    y = i["position"][1] + playfield_y_offset
+    hit_objects.append(HitCircle((x, y), i["startTime"]))
+
+running = True
+pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.play(1)
+timer = 0
+objects_to_cull = 0
+# Stores circles that need to be drawn with position
+loaded_objects = []
+while running:
+    timer += 1000 / ticks
+    # Get hit objects from beatmap, check if timing is correct
+    for i in hit_objects:
+        if (timer - i.time) <= preempt:
+            loaded_objects.append(i)
+            objects_to_cull += 1
+    del beatmap["hitObjects"][0:objects_to_cull]
+    objects_to_cull = 0
+
+    screen.fill((0, 0, 0))
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    cursor = pygame.draw.circle(screen, (255, 255, 51), (mouse_x, mouse_y), 3 * res_multiplier)
+
+    missed = 0
+    for i in loaded_objects:
+        if (timer - i.time) < -200:
+            missed += 1
+            continue
+        progress = (timer - i.time) / preempt
+        i.draw(screen, 20 * res_multiplier, progress)
+    del loaded_objects[0:missed]
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for i in loaded_objects:
+                distance = ((mouse_x - i.x) ** 2 + (mouse_y - i.y) ** 2) ** 0.5
+                if distance <= 60 + 10:
+                    print('clicked\n')
+                    loaded_objects.remove(i)
+
+
+    clock.tick(ticks)
+    pygame.display.flip()
