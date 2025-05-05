@@ -55,6 +55,7 @@ elif approach_rate == 5:
     preempt = 1200
 else:
     preempt = 1200 - 750 * (approach_rate - 5) / 5
+print(f"Preempt: {preempt}")
 
 # Convert hit objects into OOP representations
 hit_objects = []
@@ -74,10 +75,13 @@ while running:
     timer += 1000 / ticks
     # Get hit objects from beatmap, check if timing is correct
     for i in hit_objects:
-        if (timer - i.time) <= preempt:
+        if (i.time - timer) <= preempt:
             loaded_objects.append(i)
             objects_to_cull += 1
-    del beatmap["hitObjects"][0:objects_to_cull]
+            print(i.position)
+        else:
+            break
+    del hit_objects[0:objects_to_cull]
     objects_to_cull = 0
 
     screen.fill((0, 0, 0))
@@ -86,11 +90,13 @@ while running:
 
     missed = 0
     for i in loaded_objects:
-        if (timer - i.time) < -200:
+        if (i.time - timer) < -200:
+            print("missed")
             missed += 1
             continue
-        progress = (timer - i.time) / preempt
+        progress = 1 - (i.time - timer) / preempt
         i.draw(screen, 20 * res_multiplier, progress)
+        print(progress)
     del loaded_objects[0:missed]
 
     for event in pygame.event.get():
@@ -100,6 +106,7 @@ while running:
             if event.key == pygame.K_ESCAPE:
                 running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
+            print(f"Mouse: {mouse_x}, {mouse_y}")
             for i in loaded_objects:
                 distance = ((mouse_x - i.x) ** 2 + (mouse_y - i.y) ** 2) ** 0.5
                 if distance <= 60 + 10:
