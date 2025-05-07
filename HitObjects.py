@@ -1,6 +1,7 @@
 """OOP representations of hit objects (hit circles, sliders, spinners)."""
 
 import pygame
+from python_osu_parser.curve import Bezier
 
 class HitCircle:
     def __init__(self, position: tuple[int, int], time, combo_num):
@@ -22,5 +23,9 @@ class HitCircle:
 
 
 class Slider(HitCircle):
-    def __init__(self, position: tuple[int, int], time, combo_num):
-        super().__init__(position, time, combo_num)
+    def __init__(self, time, combo_num, points: list[tuple[int, int]]):
+        super().__init__(points[0], time, combo_num)
+
+        self.curve_points = []
+        for i in points:
+            pass

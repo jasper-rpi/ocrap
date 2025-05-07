@@ -3,7 +3,7 @@ import os
 
 import beatmaps
 from assets import *
-from HitObjects import HitCircle
+from HitObjects import HitCircle, Slider
 
 pygame.init()
 pygame.mixer.music.load("song.mp3")
@@ -65,9 +65,17 @@ for i in beatmap["hitObjects"]:
         combo_num = 1
     else:
         combo_num += 1
-    x = i["position"][0] + playfield_x_offset
-    y = i["position"][1] + playfield_y_offset
-    hit_objects.append(HitCircle((x, y), i["startTime"], combo_num))
+    if i["object_name"] == "circle":
+        x = i["position"][0] + playfield_x_offset
+        y = i["position"][1] + playfield_y_offset
+        hit_objects.append(HitCircle((x, y), i["startTime"], combo_num))
+    elif i["object_name"] == "slider":
+        points = []
+        for point in i["points"]:
+            x = i["points"][0] + playfield_x_offset
+            y = i["points"][1] + playfield_y_offset
+            points.append((x, y))
+        hit_objects.append(Slider(i["startTime"], combo_num, points))
 
 running = True
 pygame.mixer.music.set_volume(0.5)
