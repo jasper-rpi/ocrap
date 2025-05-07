@@ -59,10 +59,15 @@ print(f"Preempt: {preempt}")
 
 # Convert hit objects into OOP representations
 hit_objects = []
+combo_num = 1
 for i in beatmap["hitObjects"]:
+    if i["newCombo"]:
+        combo_num = 1
+    else:
+        combo_num += 1
     x = i["position"][0] + playfield_x_offset
     y = i["position"][1] + playfield_y_offset
-    hit_objects.append(HitCircle((x, y), i["startTime"]))
+    hit_objects.append(HitCircle((x, y), i["startTime"], combo_num))
 
 running = True
 pygame.mixer.music.set_volume(0.5)

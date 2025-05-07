@@ -3,11 +3,12 @@
 import pygame
 
 class HitCircle:
-    def __init__(self, position: tuple[int, int], time):
+    def __init__(self, position: tuple[int, int], time, combo_num):
         self.position = position
         self.time = time
         self.x = self.position[0]
         self.y = self.position[1]
+        self.combo_num = combo_num
 
     def draw(self, screen: pygame.surface, size, progress):
         """
@@ -18,3 +19,8 @@ class HitCircle:
         # Draw approach circle
         approach_radius = size * 2 - (progress * size)
         pygame.draw.circle(screen, (255, 255, 255), self.position, approach_radius, width=3)
+
+
+class Slider(HitCircle):
+    def __init__(self, position: tuple[int, int], time, combo_num):
+        super().__init__(position, time, combo_num)
