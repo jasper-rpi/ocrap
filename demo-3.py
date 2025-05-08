@@ -94,7 +94,6 @@ while running:
         if (i.time - timer) <= preempt:
             loaded_objects.append(i)
             objects_to_cull += 1
-            print(i.position)
         else:
             break
     del hit_objects[0:objects_to_cull]
@@ -112,7 +111,6 @@ while running:
             continue
         progress = 1 - (i.time - timer) / preempt
         i.draw(screen, 20 * res_multiplier, progress)
-        print(progress)
     del loaded_objects[0:missed]
 
     cursor_rect.center = pygame.mouse.get_pos()

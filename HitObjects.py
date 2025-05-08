@@ -1,6 +1,7 @@
 """OOP representations of hit objects (hit circles, sliders, spinners)."""
 
 import pygame
+import os
 from python_osu_parser.curve import Bezier
 
 class HitCircle:
@@ -16,7 +17,10 @@ class HitCircle:
         Draw hit circle on screen.
 
         Progress is a float that determines the radius of the approach circle (0: fully outside, 1: flush with circle)"""
-        pygame.draw.circle(screen, (255, 255, 255), self.position, size)
+        hitcircle = pygame.image.load(os.path.join('assets', 'circle_pls-work.png'))
+        hitcircle = pygame.transform.scale(hitcircle, (size, size))
+        screen.blit(hitcircle,
+                    (self.position[0] - hitcircle.get_height() / 2, self.position[1] - hitcircle.get_width() / 2))
         # Draw approach circle
         approach_radius = size * 2 - (progress * size)
         pygame.draw.circle(screen, (255, 255, 255), self.position, approach_radius, width=3)
@@ -65,8 +69,12 @@ class Slider(HitCircle):
         # Draw start point
         super().draw(screen, size, progress)
         # Draw end point
-        pygame.draw.circle(screen, (255, 255, 255), self.curve_points[-1][-1], size)
-
+        hitcircle = pygame.image.load(os.path.join('assets', 'circle_pls-work.png'))
+        hitcircle = pygame.transform.scale(hitcircle, (size, size))
+        x = self.curve_points[-1][-1][0]
+        y = self.curve_points[-1][-1][1]
+        screen.blit(hitcircle,
+                    (x - hitcircle.get_height() / 2, y - hitcircle.get_width() / 2))
 
 
 def get_curve_point(points, t: float):
