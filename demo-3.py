@@ -72,10 +72,10 @@ for i in beatmap["hitObjects"]:
     elif i["object_name"] == "slider":
         points = []
         for point in i["points"]:
-            x = i["points"][0] + playfield_x_offset
-            y = i["points"][1] + playfield_y_offset
+            x = point[0] + playfield_x_offset
+            y = point[1] + playfield_y_offset
             points.append((x, y))
-        hit_objects.append(Slider(i["startTime"], combo_num, points))
+        hit_objects.append(Slider(i["startTime"], combo_num, points, i["curveType"]))
 
 running = True
 pygame.mixer.music.set_volume(0.5)
