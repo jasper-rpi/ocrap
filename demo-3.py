@@ -11,6 +11,9 @@ pygame.mixer.music.load("song.mp3")
 pygame.mouse.set_visible(False)
 pygame.display.set_caption('ocrap!')
 
+cursor = pygame.image.load(os.path.join('assets', 'cursor.png'))
+cursor_rect = cursor.get_rect()
+
 button_pos = 600, 600
 
 clock = pygame.time.Clock()
@@ -32,7 +35,7 @@ screen = pygame.display.set_mode(resolution)
 # https://osu.ppy.sh/wiki/en/Client/Playfield
 playfield_x = 512
 playfield_y = 384
-res_multiplier = 1
+res_multiplier = 4
 # Scale playfield with resolution
 while playfield_x <= resolution[0] and playfield_y <= resolution[1]:
     playfield_x += 512
@@ -99,7 +102,7 @@ while running:
 
     screen.fill((0, 0, 0))
     mouse_x, mouse_y = pygame.mouse.get_pos()
-    cursor = pygame.draw.circle(screen, (255, 255, 51), (mouse_x, mouse_y), 3 * res_multiplier)
+    
 
     missed = 0
     for i in loaded_objects:
@@ -112,6 +115,9 @@ while running:
         print(progress)
     del loaded_objects[0:missed]
 
+    cursor_rect.center = pygame.mouse.get_pos()
+    screen.blit(cursor, cursor_rect.center)
+    
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
