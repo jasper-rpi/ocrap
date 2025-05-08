@@ -61,7 +61,12 @@ class Slider(HitCircle):
 
     def draw(self, screen: pygame.surface, size, progress):
         for curve in self.curve_points:
-            pygame.draw.lines(screen, (255, 255, 255), False, curve)
+            pygame.draw.lines(screen, (255, 255, 255), False, curve, width=20)
+        # Draw start point
+        super().draw(screen, size, progress)
+        # Draw end point
+        pygame.draw.circle(screen, (255, 255, 255), self.curve_points[-1][-1], size)
+
 
 
 def get_curve_point(points, t: float):
