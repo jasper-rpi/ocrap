@@ -1,5 +1,6 @@
 import pygame
 import os
+import time
 
 import beatmaps
 from assets import *
@@ -83,12 +84,12 @@ for i in beatmap["hitObjects"]:
 running = True
 pygame.mixer.music.set_volume(0.5)
 pygame.mixer.music.play(1)
-timer = 0
 objects_to_cull = 0
 # Stores circles that need to be drawn with position
 loaded_objects = []
+start_time = time.monotonic()
 while running:
-    timer += 1000 / ticks
+    timer = (time.monotonic() - start_time) * 1000
     # Get hit objects from beatmap, check if timing is correct
     for i in hit_objects:
         if (i.time - timer) <= preempt:
