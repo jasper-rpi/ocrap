@@ -2,7 +2,7 @@
 
 import pygame
 import os
-from python_osu_parser.curve import Bezier
+from itertools import chain
 
 class HitCircle:
     def __init__(self, position: tuple[int, int], time, combo_num):
@@ -27,10 +27,11 @@ class HitCircle:
 
 
 class Slider(HitCircle):
-    def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str):
+    def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int):
         super().__init__(points[0], time, combo_num)
         self.points = points
         self.curve_type = curve_type
+        self.length = length
 
         self.curves = []
         # Split up compound curves
@@ -62,6 +63,23 @@ class Slider(HitCircle):
                     self.curve_points.append([point])
                 t += step
             index += 1
+
+        # Calculate position on slider for each point
+        # Tuples in format ((x, y), progress) where progress is from 0 to 1
+        self.slider_points = []
+        progress = 0
+        length_passed = 0
+        combined_points = tuple(enumerate(chain.from_iterable(self.curve_points)))
+        for index, point in combined_points:
+            if index == len(combined_points) - 1:
+                self.slider_points.append((point, 1))
+            else:
+                x_squared = (point[0] - combined_points[index + 1][1][0]) ** 2
+                y_squared = (point[1] - combined_points[index + 1][1][1]) ** 2
+                distance = (x_squared - y_squared) ** 0.5
+                progress += distance
+                slider_progress = progress / self.length
+                self.slider_points.append((point, slider_progress))
 
     def draw(self, screen: pygame.surface, size, progress):
         for curve in self.curve_points:
