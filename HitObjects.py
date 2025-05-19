@@ -34,6 +34,8 @@ class Slider(HitCircle):
         self.points = points
         self.curve_type = curve_type
         self.length = length
+        # Track state of movement
+        self.state = "unpressed"
 
         self.curves = []
         # Split up compound curves
