@@ -5,22 +5,24 @@ import os
 from itertools import chain
 
 class HitCircle:
-    def __init__(self, position: tuple[int, int], time, combo_num):
+    def __init__(self, position: tuple[int, int], time, combo_num, radius):
         self.position = position
         self.time = time
         self.x = self.position[0]
         self.y = self.position[1]
         self.combo_num = combo_num
+        self.radius = radius
 
     def draw(self, screen: pygame.surface, size, progress):
         """
         Draw hit circle on screen.
 
         Progress is a float that determines the radius of the approach circle (0: fully outside, 1: flush with circle)"""
+        size = int(self.radius * 2)
         hitcircle = pygame.image.load(os.path.join('assets', 'circle_pls-work.png'))
         hitcircle = pygame.transform.scale(hitcircle, (size, size))
         screen.blit(hitcircle,
-                    (self.position[0] - hitcircle.get_height() / 2, self.position[1] - hitcircle.get_width() / 2))
+                    (self.position[0] - hitcircle.get_width() / 2, self.position[1] - hitcircle.get_height() / 2))
         # Draw approach circle
         approach_radius = size * 2 - (progress * size)
         pygame.draw.circle(screen, (255, 255, 255), self.position, approach_radius, width=3)
@@ -28,7 +30,7 @@ class HitCircle:
 
 class Slider(HitCircle):
     def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int):
-        super().__init__(points[0], time, combo_num)
+        super().__init__(points[0], time, combo_num, self.radius)
         self.points = points
         self.curve_type = curve_type
         self.length = length
