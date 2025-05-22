@@ -141,16 +141,23 @@ while running:
                 running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             print(f"Mouse: {mouse_x}, {mouse_y}")
-            for i in loaded_objects:
-                distance = ((mouse_x - i.x) ** 2 + (mouse_y - i.y) ** 2) ** 0.5
-
-                if distance <= hit_radius:
-                    print('clicked\n')
-                    loaded_objects.remove(i)
-                    if (i.time - timer) > 200:
+            first = loaded_objects[0]
+            distance = ((mouse_x - first.x) ** 2 + (mouse_y - first.y) ** 2) ** 0.5
+            if distance <= hit_radius:
+                print('clicked\n')
+                del loaded_objects[0]
+                if (first.time - timer) > 200:
+                    health -= 5
+                elif health < 100:
+                    health += 5
+            else:
+                for i in loaded_objects:
+                    distance = ((mouse_x - i.x) ** 2 + (mouse_y - i.y) ** 2) ** 0.5
+                    if distance <= hit_radius:
+                        print('clicked\n')
+                        loaded_objects.remove(i)
                         health -= 5
-                    elif health < 100:
-                        health += 5
+                        break
 
     if health <= 0:
         running = False
