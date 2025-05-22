@@ -31,19 +31,15 @@ class HitCircle:
 
 
 class Slider(HitCircle):
-    def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int, radius, beat_length,
-                 velocity, bounces):
+    def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int, radius, duration):
         self.radius = radius
         super().__init__(points[0], time, combo_num, radius)
         self.points = points
         self.curve_type = curve_type
         self.length = length
-        self.beatlength = beat_length
-        self.velocity = velocity
-        self.bounces = bounces
+        self.duration = duration
         # Track state of movement
         self.state = "unpressed"
-        self.move_progress = 0
 
         self.curves = []
         # Split up compound curves
@@ -93,7 +89,7 @@ class Slider(HitCircle):
                 slider_progress = progress / self.length
                 self.slider_points.append((point, slider_progress))
 
-    def draw(self, screen: pygame.surface, hit_progress):
+    def draw(self, screen: pygame.surface, hit_progress, move_progress=0):
         for curve in self.curve_points:
             pygame.draw.lines(screen, (255, 255, 255), False, curve, width=20)
         size = int(self.radius * 2)
@@ -101,9 +97,7 @@ class Slider(HitCircle):
             # Draw start point
             super().draw(screen, hit_progress)
         else:
-            # Draw slider ball
-            point = find_curve_point_by_length(self.slider_points, self.move_progress)
-            print(point)
+            point = find_curve_point_by_length(self.slider_points, move_progress)
             pygame.draw.circle(screen, (255, 192, 253), point, size)
 
         # Draw end point
@@ -143,11 +137,10 @@ def find_curve_point_by_length(points, t: float):
     :return: tuple with x and y values of needed point
     """
     for index, i in enumerate(points):
-        if t < i[1]:
+        if i[1] > t:
             first_point = points[index - 1][0]
-            # second_point = i[0]
-            # t_x = (second_point[0] - first_point[0]) / (t - first_point[0])
-            # t_y = (second_point[1] - first_point[1]) / (t - first_point[1])
-            # x = pygame.math.lerp(first_point[0], second_point[0], t_x)
-            # y = pygame.math.lerp(first_point[1], second_point[1], t_y)
-            return first_point[0], first_point[1]
+            second_point = i[0]
+            t_inbetween = pygame.math.lerp(first_point[1], second_point[1], t)
+            x = pygame.math.lerp(first_point[0], second_point[0], t_inbetween)
+            y = pygame.math.lerp(first_point[1], second_point[1], t_inbetween)
+            return x, y
