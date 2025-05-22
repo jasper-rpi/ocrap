@@ -13,7 +13,7 @@ class HitCircle:
         self.combo_num = combo_num
         self.radius = radius
 
-    def draw(self, screen: pygame.surface, size, progress):
+    def draw(self, screen: pygame.surface, progress):
         """
         Draw hit circle on screen.
 
@@ -25,16 +25,34 @@ class HitCircle:
                     (self.position[0] - hitcircle.get_width() / 2, self.position[1] - hitcircle.get_height() / 2))
         # Draw approach circle
         approach_radius = size * 2 - (progress * size)
+        if round(approach_radius) == size:
+            print("flush")
         pygame.draw.circle(screen, (255, 255, 255), self.position, approach_radius, width=3)
+
+        if self.combo_num < 10:
+            number = pygame.image.load(os.path.join('assets/numbers', f"number{self.combo_num}.png"))
+            number = pygame.transform.scale(number, (size, size))
+            screen.blit(number,
+                    (self.position[0] - number.get_height() / 2, self.position[1] - number.get_width() / 2))
+        if self.combo_num >= 10 and self.combo_num < 100:
+            number0 = pygame.image.load(os.path.join('assets/numbers', f"number{[self.combo_num][0]}.png"))
+            number1 = pygame.image.load(os.path.join('assets/numbers', f"number{[self.combo_num][1]}.png"))
+            number0 = pygame.transform.scale(number0, (size, size))
+            number1 = pygame.transform.scale(number1, (size, size))
+            screen.blit(number0,
+                    (self.position[0] - number0.get_width(), self.position[1] - number0.get_height() / 2))
+            screen.blit(number1,
+                    (self.position[0], self.position[1] - number1.get_height() / 2))
 
 
 class Slider(HitCircle):
-    def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int, radius):
+    def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int, radius, duration):
         self.radius = radius
         super().__init__(points[0], time, combo_num, radius)
         self.points = points
         self.curve_type = curve_type
         self.length = length
+        self.duration = duration
         # Track state of movement
         self.state = "unpressed"
 
@@ -86,11 +104,17 @@ class Slider(HitCircle):
                 slider_progress = progress / self.length
                 self.slider_points.append((point, slider_progress))
 
-    def draw(self, screen: pygame.surface, size, progress):
+    def draw(self, screen: pygame.surface, hit_progress, move_progress=0):
         for curve in self.curve_points:
             pygame.draw.lines(screen, (255, 255, 255), False, curve, width=20)
-        # Draw start point
-        super().draw(screen, size, progress)
+        size = int(self.radius * 2)
+        if self.state == "unpressed":
+            # Draw start point
+            super().draw(screen, hit_progress)
+        else:
+            point = find_curve_point_by_length(self.slider_points, move_progress)
+            pygame.draw.circle(screen, (255, 192, 253), point, size)
+
         # Draw end point
         hitcircle = pygame.image.load(os.path.join('assets', 'circle_pls-work.png'))
         hitcircle = pygame.transform.scale(hitcircle, (size, size))
@@ -117,3 +141,21 @@ def get_curve_point(points, t: float):
         y = (1 - t) * points[i][1] + t * points[i + 1][1]
         new_points[i] = (x, y)
     return get_curve_point(new_points, t)
+
+
+def find_curve_point_by_length(points, t: float):
+    """
+    Find point on compound curve corresponding to ratio t.
+
+    :param points: list of curve points with lengths included
+    :param t: ratio from 0 to 1
+    :return: tuple with x and y values of needed point
+    """
+    for index, i in enumerate(points):
+        if i[1] > t:
+            first_point = points[index - 1][0]
+            second_point = i[0]
+            t_inbetween = pygame.math.lerp(first_point[1], second_point[1], t)
+            x = pygame.math.lerp(first_point[0], second_point[0], t_inbetween)
+            y = pygame.math.lerp(first_point[1], second_point[1], t_inbetween)
+            return x, y

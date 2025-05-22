@@ -89,7 +89,7 @@ for i in beatmap["hitObjects"]:
             x = point[0] + playfield_x_offset
             y = point[1] + playfield_y_offset
             points.append((x, y))
-        hit_objects.append(Slider(i["startTime"], combo_num, points, i["curveType"], i["pixelLength"], r))
+        hit_objects.append(Slider(i["startTime"], combo_num, points, i["curveType"], i["pixelLength"], r, i["duration"]))
 
 health = 100
 
@@ -127,7 +127,7 @@ while running:
             health -= 10
             continue
         progress = 1 - (i.time - timer) / preempt
-        i.draw(screen, 20 * res_multiplier, progress)
+        i.draw(screen, progress)
     del loaded_objects[0:missed]
 
     screen.blit(cursor, (mouse_x - cursor_rect.width // 2, mouse_y - cursor_rect.height // 2))
@@ -141,25 +141,25 @@ while running:
                 running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             print(f"Mouse: {mouse_x}, {mouse_y}")
-            first = loaded_objects[0]
-            distance = ((mouse_x - first.x) ** 2 + (mouse_y - first.y) ** 2) ** 0.5
-            if distance <= hit_radius:
-                print('clicked\n')
-                del loaded_objects[0]
-                if (first.time - timer) > 200:
-                    health -= 5
-                elif health < 100:
-                    health += 5
-            else:
-                for i in loaded_objects:
-                    distance = ((mouse_x - i.x) ** 2 + (mouse_y - i.y) ** 2) ** 0.5
-                    if distance <= hit_radius:
+            # Process first object
+            x = loaded_objects[0].x
+            y = loaded_objects[0].y
+            distance = ((mouse_x - x) ** 2 + (mouse_y - y) ** 2) ** 0.5
+            if isinstance(loaded_objects[0], HitCircle):
+                if distance <= 60 + 10:
+                    print('clicked\n')
+                    del loaded_objects[0]
+            elif isinstance(loaded_objects[0], Slider):
+                if loaded_objects[0].state == "unpressed":
+                    loaded_objects[0].state = "pressed"
+                    if distance <= 60 + 10:
                         print('clicked\n')
-                        loaded_objects.remove(i)
-                        health -= 5
-                        break
+                        del loaded_objects[0]
+                else:
+                    pass
 
     if health <= 0:
+        print("You're dead!")
         running = False
 
 
