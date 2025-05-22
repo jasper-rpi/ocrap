@@ -29,6 +29,21 @@ class HitCircle:
             print("flush")
         pygame.draw.circle(screen, (255, 255, 255), self.position, approach_radius, width=3)
 
+        if self.combo_num < 10:
+            number = pygame.image.load(os.path.join('assets/numbers', f"number{self.combo_num}.png"))
+            number = pygame.transform.scale(number, (size, size))
+            screen.blit(number,
+                    (self.position[0] - number.get_height() / 2, self.position[1] - number.get_width() / 2))
+        if self.combo_num >= 10 and self.combo_num < 100:
+            number0 = pygame.image.load(os.path.join('assets/numbers', f"number{[self.combo_num][0]}.png"))
+            number1 = pygame.image.load(os.path.join('assets/numbers', f"number{[self.combo_num][1]}.png"))
+            number0 = pygame.transform.scale(number0, (size, size))
+            number1 = pygame.transform.scale(number1, (size, size))
+            screen.blit(number0,
+                    (self.position[0] - number0.get_width(), self.position[1] - number0.get_height() / 2))
+            screen.blit(number1,
+                    (self.position[0], self.position[1] - number1.get_height() / 2))
+
 
 class Slider(HitCircle):
     def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int, radius, duration):
