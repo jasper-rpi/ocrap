@@ -147,7 +147,9 @@ while running:
                 if distance <= hit_radius:
                     print('clicked\n')
                     loaded_objects.remove(i)
-                    if health < 100:
+                    if (i.time - timer) > 200:
+                        health -= 5
+                    elif health < 100:
                         health += 5
 
     if health <= 0:
