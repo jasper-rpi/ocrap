@@ -12,7 +12,7 @@ pygame.mixer.music.load("song.mp3")
 # Initialize font for health display
 pygame.font.init()
 health_font = pygame.font.SysFont('Arial', 36)  # You can change the font and size as needed
-
+score_font = pygame.font.SysFont('Comic Sans MS', 36)
 pygame.mouse.set_visible(False)
 pygame.display.set_caption('ocrap!')
 
@@ -92,6 +92,8 @@ for i in beatmap["hitObjects"]:
         hit_objects.append(Slider(i["startTime"], combo_num, points, i["curveType"], i["pixelLength"], r, i["duration"]))
 
 health = 100
+amount_of_objects = len(hit_objects)
+misses = 0
 
 running = True
 pygame.mixer.music.set_volume(0.5)
@@ -118,12 +120,16 @@ while running:
     # Render and display health
     health_text = health_font.render(f'{health * "l"}', True, (255, 255, 255))
     screen.blit(health_text, (20, 20))  # Position in top left corner with 20px padding
+    score = (amount_of_objects - misses) * 300
+    score_text = score_font.render(f'{score}', True, (255, 255, 255))
+    screen.blit(score_text, (20, 60))  # Position in top left corner with 20px padding
 
     missed = 0
     for i in loaded_objects:
         if (i.time - timer) < -200:
             print("missed")
             missed += 1
+            misses += 1
             health -= 10
             continue
         progress = 1 - (i.time - timer) / preempt
@@ -148,12 +154,16 @@ while running:
             if isinstance(loaded_objects[0], HitCircle):
                 if distance <= 60 + 10:
                     print('clicked\n')
+                    if health < 100:
+                        health += 5
                     del loaded_objects[0]
             elif isinstance(loaded_objects[0], Slider):
                 if loaded_objects[0].state == "unpressed":
                     loaded_objects[0].state = "pressed"
                     if distance <= 60 + 10:
                         print('clicked\n')
+                        if health < 100:
+                            health += 5
                         del loaded_objects[0]
                 else:
                     pass
