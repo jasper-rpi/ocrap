@@ -55,6 +55,7 @@ playfield_x_offset = (resolution[0] - playfield_x) // 2
 playfield_y_offset = (resolution[1] - playfield_y) // 2
 
 beatmap = beatmaps.parse_beatmap("beatmap.osu")
+slider_multiplier = float(beatmap["SliderMultiplier"])
 
 approach_rate = float(beatmap["ApproachRate"])
 # time to start fading in at: https://osu.ppy.sh/wiki/en/Beatmap/Approach_rate
@@ -74,6 +75,8 @@ r *= res_multiplier / 4
 # Convert hit objects into OOP representations
 hit_objects = []
 combo_num = 1
+# Current slider beat length in ms
+beat_length = 0
 for i in beatmap["hitObjects"]:
     if i["newCombo"]:
         combo_num = 1
@@ -84,12 +87,18 @@ for i in beatmap["hitObjects"]:
         y = i["position"][1] + playfield_y_offset
         hit_objects.append(HitCircle((x, y), i["startTime"], combo_num, r))
     elif i["object_name"] == "slider":
+        if i["beatLength"] > 0:
+            beat_length = i["beatLength"]
+            velocity = 1
+        else:
+            velocity = abs(i["beatLength"])
         points = []
         for point in i["points"]:
             x = point[0] + playfield_x_offset
             y = point[1] + playfield_y_offset
             points.append((x, y))
-        hit_objects.append(Slider(i["startTime"], combo_num, points, i["curveType"], i["pixelLength"], r, i["duration"]))
+        hit_objects.append(Slider(i["startTime"], combo_num, points, i["curveType"], i["pixelLength"], r, beat_length,
+                                  velocity, i["repeatCount"]))
 
 health = 100
 
@@ -121,14 +130,27 @@ while running:
 
     missed = 0
     for i in loaded_objects:
-        if (i.time - timer) < -200:
-            print("missed")
-            missed += 1
-            health -= 10
-            continue
         progress = 1 - (i.time - timer) / preempt
         i.draw(screen, progress)
-    del loaded_objects[0:missed]
+
+    # Miss/slider checking
+    if loaded_objects:
+        first = loaded_objects[0]
+        if type(first) == HitCircle:
+            if (first.time - timer) < -200:
+                print("missed")
+                missed += 1
+                del loaded_objects[0]
+        elif type(first) == Slider:
+            if first.state == "unpressed" and (first.time - timer) < -200:
+                print("missed")
+                missed += 1
+                del loaded_objects[0]
+            else:
+                duration = first.length / (slider_multiplier * 100 * first.velocity) * first.beatlength
+                move_progress = (timer - first.time) / duration
+                if move_progress > 1:
+                    del loaded_objects[0]
 
     screen.blit(cursor, (mouse_x - cursor_rect.width // 2, mouse_y - cursor_rect.height // 2))
     hit_radius = r + 13 * (res_multiplier / 4)
@@ -145,18 +167,17 @@ while running:
             x = loaded_objects[0].x
             y = loaded_objects[0].y
             distance = ((mouse_x - x) ** 2 + (mouse_y - y) ** 2) ** 0.5
-            if isinstance(loaded_objects[0], HitCircle):
+            if type(first) == HitCircle:
                 if distance <= 60 + 10:
                     print('clicked\n')
+                    print(isinstance(first, HitCircle))
                     del loaded_objects[0]
-            elif isinstance(loaded_objects[0], Slider):
+            elif type(first) == Slider:
                 if loaded_objects[0].state == "unpressed":
-                    loaded_objects[0].state = "pressed"
                     if distance <= 60 + 10:
                         print('clicked\n')
-                        del loaded_objects[0]
-                else:
-                    pass
+                        first.state = "forwards"
+
 
     if health <= 0:
         print("You're dead!")

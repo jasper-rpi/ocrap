@@ -179,6 +179,7 @@ class BeatmapParser():
                 beats_number = (hit_object["pixelLength"] * int(hit_object["repeatCount"])) / px_per_beat
                 hit_object["duration"] = math.ceil(beats_number * timing["beatLength"])
                 hit_object["end_time"] = hit_object["startTime"] + hit_object["duration"]
+                hit_object["beatLength"] = timing["beatLength"]
 
             # Parse slider points
             points = (members[5] or '').split('|')
