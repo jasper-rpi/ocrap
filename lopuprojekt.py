@@ -89,7 +89,7 @@ for i in beatmap["hitObjects"]:
             x = point[0] + playfield_x_offset
             y = point[1] + playfield_y_offset
             points.append((x, y))
-        hit_objects.append(Slider(i["startTime"], combo_num, points, i["curveType"], i["pixelLength"]))
+        hit_objects.append(Slider(i["startTime"], combo_num, points, i["curveType"], i["pixelLength"], r))
 
 health = 100
 

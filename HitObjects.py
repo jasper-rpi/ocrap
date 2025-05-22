@@ -29,9 +29,8 @@ class HitCircle:
 
 
 class Slider(HitCircle):
-    def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int):
-        # Get radius from parent class
-        radius = 54.4 - 4.48 * 5  # Default circle size of 5
+    def __init__(self, time, combo_num, points: list[tuple[int, int]], curve_type: str, length: int, radius):
+        self.radius = radius
         super().__init__(points[0], time, combo_num, radius)
         self.points = points
         self.curve_type = curve_type
